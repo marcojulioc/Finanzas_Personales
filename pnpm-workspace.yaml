@@ -1,0 +1,10 @@
+packages:
+  - .
+
+ignoredBuiltDependencies:
+  - '@prisma/engines'
+  - esbuild
+  - msgpackr-extract
+  - prisma
+  - sharp
+  - unrs-resolver
