@@ -25,27 +25,16 @@ import {
   getExpensesByCategoryAction,
 } from "@/server/actions/transaction.actions";
 import { getBudgetAlertsAction } from "@/server/actions/budget.actions";
-import type { Transaction, FinanceAccount, Category } from "@prisma/client";
-
-interface AccountWithBalance extends FinanceAccount {
-  currentBalance: number;
-}
-
-interface TransactionWithRelations extends Transaction {
-  account: FinanceAccount;
-  category: Category | null;
-}
-
-interface BudgetAlert {
-  id: string;
-  category: Category;
-  spent: number;
-  progress: number;
-  amount: { toNumber: () => number };
-}
+import type { Category } from "@prisma/client";
+import type {
+  AccountWithBalance,
+  TransactionWithRelations,
+  BudgetWithProgress,
+  SerializedAccount,
+} from "@/types";
 
 interface CreditCardDebt {
-  card: FinanceAccount;
+  card: SerializedAccount;
   debt: number;
 }
 
@@ -65,7 +54,7 @@ export function DashboardContent() {
     savingsRate: 0,
   });
   const [recentTransactions, setRecentTransactions] = useState<TransactionWithRelations[]>([]);
-  const [budgetAlerts, setBudgetAlerts] = useState<BudgetAlert[]>([]);
+  const [budgetAlerts, setBudgetAlerts] = useState<BudgetWithProgress[]>([]);
   const [creditCardDebt, setCreditCardDebt] = useState<CreditCardDebt[]>([]);
   const [expensesByCategory, setExpensesByCategory] = useState<ExpenseByCategory[]>([]);
 
@@ -324,7 +313,7 @@ export function DashboardContent() {
                   <div>
                     <p className="font-medium">{alert.category.name}</p>
                     <p className="text-sm text-muted-foreground">
-                      {formatMoney(alert.spent)} de {formatMoney(alert.amount.toNumber())}
+                      {formatMoney(alert.spent)} de {formatMoney(alert.amount)}
                     </p>
                   </div>
                   <Badge

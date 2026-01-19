@@ -34,23 +34,19 @@ import {
   updateTransactionAction,
   deleteTransactionAction,
 } from "@/server/actions/transaction.actions";
-import type { Transaction, FinanceAccount, Category } from "@prisma/client";
-
-interface CategoryWithSubs extends Category {
-  subcategories: Category[];
-}
-
-interface TransactionWithRelations extends Transaction {
-  account: FinanceAccount;
-  category: Category | null;
-}
+import type { Category } from "@prisma/client";
+import type {
+  TransactionWithRelations,
+  SerializedAccount,
+  CategoryWithSubcategories,
+} from "@/types";
 
 interface TransactionFormProps {
   open: boolean;
   onClose: () => void;
   transaction: TransactionWithRelations | null;
-  accounts: FinanceAccount[];
-  categories: CategoryWithSubs[];
+  accounts: SerializedAccount[];
+  categories: CategoryWithSubcategories[];
 }
 
 export function TransactionForm({
@@ -272,14 +268,14 @@ export function TransactionForm({
           <div className="space-y-2">
             <Label>Categoría</Label>
             <Select
-              value={selectedCategoryId || ""}
-              onValueChange={(value) => setValue("categoryId", value || undefined)}
+              value={selectedCategoryId || "none"}
+              onValueChange={(value) => setValue("categoryId", value === "none" ? undefined : value)}
             >
               <SelectTrigger className="h-12">
                 <SelectValue placeholder="Seleccionar categoría" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Sin categoría</SelectItem>
+                <SelectItem value="none">Sin categoría</SelectItem>
                 {allCategories.map((category) => (
                   <SelectItem key={category.id} value={category.id}>
                     {category.parentId ? "  └ " : ""}

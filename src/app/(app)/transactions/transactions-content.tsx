@@ -27,22 +27,18 @@ import { getTransactionsAction } from "@/server/actions/transaction.actions";
 import { getAccountsAction } from "@/server/actions/account.actions";
 import { getCategoriesAction } from "@/server/actions/category.actions";
 import { TransactionForm } from "./transaction-form";
-import type { Transaction, FinanceAccount, Category } from "@prisma/client";
-
-interface TransactionWithRelations extends Transaction {
-  account: FinanceAccount;
-  category: Category | null;
-}
-
-interface CategoryWithSubs extends Category {
-  subcategories: Category[];
-}
+import type { Category } from "@prisma/client";
+import type {
+  TransactionWithRelations,
+  SerializedAccount,
+  CategoryWithSubcategories,
+} from "@/types";
 
 export function TransactionsContent() {
   const [loading, setLoading] = useState(true);
   const [transactions, setTransactions] = useState<TransactionWithRelations[]>([]);
-  const [accounts, setAccounts] = useState<FinanceAccount[]>([]);
-  const [categories, setCategories] = useState<CategoryWithSubs[]>([]);
+  const [accounts, setAccounts] = useState<SerializedAccount[]>([]);
+  const [categories, setCategories] = useState<CategoryWithSubcategories[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<TransactionWithRelations | null>(null);
   const [pagination, setPagination] = useState({
@@ -151,14 +147,14 @@ export function TransactionsContent() {
             </div>
 
             <Select
-              value={filters.accountId}
-              onValueChange={(value) => handleFilterChange("accountId", value)}
+              value={filters.accountId || "all"}
+              onValueChange={(value) => handleFilterChange("accountId", value === "all" ? "" : value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Todas las cuentas" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todas las cuentas</SelectItem>
+                <SelectItem value="all">Todas las cuentas</SelectItem>
                 {accounts.map((account) => (
                   <SelectItem key={account.id} value={account.id}>
                     {account.name}
@@ -168,14 +164,14 @@ export function TransactionsContent() {
             </Select>
 
             <Select
-              value={filters.type}
-              onValueChange={(value) => handleFilterChange("type", value)}
+              value={filters.type || "all"}
+              onValueChange={(value) => handleFilterChange("type", value === "all" ? "" : value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Todos los tipos" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos los tipos</SelectItem>
+                <SelectItem value="all">Todos los tipos</SelectItem>
                 <SelectItem value="INCOME">Ingresos</SelectItem>
                 <SelectItem value="EXPENSE">Gastos</SelectItem>
                 <SelectItem value="ADJUSTMENT">Ajustes</SelectItem>

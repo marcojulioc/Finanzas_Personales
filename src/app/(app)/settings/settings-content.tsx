@@ -31,15 +31,8 @@ import {
   deleteAccountAction,
 } from "@/server/actions/account.actions";
 import { getCategoriesAction } from "@/server/actions/category.actions";
-import type { FinanceAccount, Category } from "@prisma/client";
-
-interface AccountWithBalance extends FinanceAccount {
-  currentBalance: number;
-}
-
-interface CategoryWithSubs extends Category {
-  subcategories: Category[];
-}
+import type { Category } from "@prisma/client";
+import type { AccountWithBalance, CategoryWithSubcategories } from "@/types";
 
 const accountTypeIcons = {
   CASH: Wallet,
@@ -57,11 +50,15 @@ export function SettingsContent() {
   const { data: session } = useSession();
   const [loading, setLoading] = useState(true);
   const [accounts, setAccounts] = useState<AccountWithBalance[]>([]);
-  const [categories, setCategories] = useState<CategoryWithSubs[]>([]);
+  const [categories, setCategories] = useState<CategoryWithSubcategories[]>([]);
   const [showAccountForm, setShowAccountForm] = useState(false);
-  const [newAccount, setNewAccount] = useState({
+  const [newAccount, setNewAccount] = useState<{
+    name: string;
+    type: "CASH" | "BANK" | "CREDIT_CARD";
+    initialBalance: number;
+  }>({
     name: "",
-    type: "CASH" as const,
+    type: "CASH",
     initialBalance: 0,
   });
 

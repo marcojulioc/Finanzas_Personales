@@ -22,23 +22,35 @@ export type PaymentMethod = "CASH" | "TRANSFER" | "CARD" | "CHECK" | "OTHER";
 export type CategoryType = "INCOME" | "EXPENSE";
 export type ImportStatus = "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED";
 
+// Serialized types (Decimal -> number) for client components
+export interface SerializedAccount extends Omit<FinanceAccount, "initialBalance"> {
+  initialBalance: number;
+}
+
+export interface SerializedTransaction extends Omit<Transaction, "amount"> {
+  amount: number;
+  account: SerializedAccount;
+  category: Category | null;
+}
+
+export interface SerializedBudget extends Omit<Budget, "amount"> {
+  amount: number;
+  category: Category;
+}
+
 export interface CategoryWithSubcategories extends Category {
   subcategories: Category[];
 }
 
-export interface TransactionWithRelations extends Transaction {
-  account: FinanceAccount;
-  category: Category | null;
-}
+export interface TransactionWithRelations extends SerializedTransaction {}
 
-export interface AccountWithBalance extends FinanceAccount {
+export interface AccountWithBalance extends SerializedAccount {
   currentBalance: number;
   totalIncome: number;
   totalExpense: number;
 }
 
-export interface BudgetWithProgress extends Budget {
-  category: Category;
+export interface BudgetWithProgress extends SerializedBudget {
   spent: number;
   progress: number;
   remaining: number;

@@ -27,13 +27,10 @@ import {
   createBudgetAction,
   updateBudgetAction,
 } from "@/server/actions/budget.actions";
-import type { Budget, Category } from "@prisma/client";
-import { Decimal } from "@prisma/client/runtime/library";
+import type { Category } from "@prisma/client";
+import type { SerializedBudget } from "@/types";
 
-interface BudgetWithCategory extends Budget {
-  category: Category;
-  amount: Decimal;
-}
+interface BudgetWithCategory extends SerializedBudget {}
 
 interface BudgetFormProps {
   open: boolean;
@@ -73,7 +70,7 @@ export function BudgetForm({
     if (budget) {
       reset({
         categoryId: budget.categoryId,
-        amount: budget.amount.toNumber(),
+        amount: budget.amount,
         month: budget.month,
         year: budget.year,
       });

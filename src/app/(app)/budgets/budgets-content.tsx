@@ -25,16 +25,8 @@ import {
 } from "@/server/actions/budget.actions";
 import { getCategoriesByTypeAction } from "@/server/actions/category.actions";
 import { BudgetForm } from "./budget-form";
-import type { Budget, Category } from "@prisma/client";
-import { Decimal } from "@prisma/client/runtime/library";
-
-interface BudgetWithProgress extends Budget {
-  category: Category;
-  spent: number;
-  progress: number;
-  remaining: number;
-  amount: Decimal;
-}
+import type { Category } from "@prisma/client";
+import type { BudgetWithProgress } from "@/types";
 
 export function BudgetsContent() {
   const [loading, setLoading] = useState(true);
@@ -110,7 +102,7 @@ export function BudgetsContent() {
     loadBudgets();
   };
 
-  const totalBudget = budgets.reduce((sum, b) => sum + b.amount.toNumber(), 0);
+  const totalBudget = budgets.reduce((sum, b) => sum + b.amount, 0);
   const totalSpent = budgets.reduce((sum, b) => sum + b.spent, 0);
   const overallProgress = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
 

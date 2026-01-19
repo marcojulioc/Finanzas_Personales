@@ -1,8 +1,24 @@
 import prisma from "@/lib/db";
-import type { TransactionType, PaymentMethod } from "@prisma/client";
+import type { TransactionType, PaymentMethod, FinanceAccount, Category, Transaction } from "@prisma/client";
 import type { TransactionInput, TransactionFilterInput } from "@/lib/validators/transaction";
 import { Decimal } from "@prisma/client/runtime/library";
 import { startOfMonth, endOfMonth } from "date-fns";
+
+type TransactionWithRelations = Transaction & {
+  account: FinanceAccount;
+  category: Category | null;
+};
+
+function serializeTransaction(t: TransactionWithRelations) {
+  return {
+    ...t,
+    amount: t.amount.toNumber(),
+    account: {
+      ...t.account,
+      initialBalance: t.account.initialBalance.toNumber(),
+    },
+  };
+}
 
 export async function getTransactions(userId: string, filters: TransactionFilterInput) {
   const { page, limit, accountId, categoryId, type, startDate, endDate, search } = filters;
@@ -43,7 +59,7 @@ export async function getTransactions(userId: string, filters: TransactionFilter
   ]);
 
   return {
-    data: transactions,
+    data: transactions.map(serializeTransaction),
     total,
     page,
     limit,
@@ -52,17 +68,19 @@ export async function getTransactions(userId: string, filters: TransactionFilter
 }
 
 export async function getTransactionById(userId: string, transactionId: string) {
-  return prisma.transaction.findFirst({
+  const transaction = await prisma.transaction.findFirst({
     where: { id: transactionId, userId },
     include: {
       account: true,
       category: true,
     },
   });
+
+  return transaction ? serializeTransaction(transaction) : null;
 }
 
 export async function createTransaction(userId: string, data: TransactionInput) {
-  return prisma.transaction.create({
+  const transaction = await prisma.transaction.create({
     data: {
       userId,
       accountId: data.accountId,
@@ -79,6 +97,8 @@ export async function createTransaction(userId: string, data: TransactionInput) 
       category: true,
     },
   });
+
+  return serializeTransaction(transaction);
 }
 
 export async function updateTransaction(
@@ -208,7 +228,7 @@ export async function getMonthlyTrend(userId: string, months: number = 6) {
 }
 
 export async function getRecentTransactions(userId: string, limit: number = 5) {
-  return prisma.transaction.findMany({
+  const transactions = await prisma.transaction.findMany({
     where: { userId },
     include: {
       account: true,
@@ -217,4 +237,6 @@ export async function getRecentTransactions(userId: string, limit: number = 5) {
     orderBy: [{ date: "desc" }, { createdAt: "desc" }],
     take: limit,
   });
+
+  return transactions.map(serializeTransaction);
 }

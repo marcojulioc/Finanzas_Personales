@@ -34,6 +34,7 @@ export async function getBudgetsByUser(userId: string, month: number, year: numb
 
       return {
         ...budget,
+        amount: budgetAmount,
         spent: spentAmount,
         progress: Math.min(progress, 100),
         remaining,
@@ -45,14 +46,21 @@ export async function getBudgetsByUser(userId: string, month: number, year: numb
 }
 
 export async function getBudgetById(userId: string, budgetId: string) {
-  return prisma.budget.findFirst({
+  const budget = await prisma.budget.findFirst({
     where: { id: budgetId, userId },
     include: { category: true },
   });
+
+  if (!budget) return null;
+
+  return {
+    ...budget,
+    amount: budget.amount.toNumber(),
+  };
 }
 
 export async function createBudget(userId: string, data: BudgetInput) {
-  return prisma.budget.upsert({
+  const budget = await prisma.budget.upsert({
     where: {
       userId_categoryId_month_year: {
         userId,
@@ -73,6 +81,11 @@ export async function createBudget(userId: string, data: BudgetInput) {
     },
     include: { category: true },
   });
+
+  return {
+    ...budget,
+    amount: budget.amount.toNumber(),
+  };
 }
 
 export async function updateBudget(

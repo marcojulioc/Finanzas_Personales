@@ -303,16 +303,16 @@ export function ImportContent() {
                   <div className="space-y-2">
                     <Label>Descripción</Label>
                     <Select
-                      value={mapping.description}
+                      value={mapping.description || "none"}
                       onValueChange={(v) =>
-                        setMapping((prev) => ({ ...prev, description: v }))
+                        setMapping((prev) => ({ ...prev, description: v === "none" ? "" : v }))
                       }
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Seleccionar columna" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Ninguna</SelectItem>
+                        <SelectItem value="none">Ninguna</SelectItem>
                         {csvHeaders.map((h) => (
                           <SelectItem key={h} value={h}>
                             {h}
@@ -325,16 +325,16 @@ export function ImportContent() {
                   <div className="space-y-2">
                     <Label>Tipo (Ingreso/Gasto)</Label>
                     <Select
-                      value={mapping.type}
+                      value={mapping.type || "none"}
                       onValueChange={(v) =>
-                        setMapping((prev) => ({ ...prev, type: v }))
+                        setMapping((prev) => ({ ...prev, type: v === "none" ? "" : v }))
                       }
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Seleccionar columna" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Ninguna</SelectItem>
+                        <SelectItem value="none">Ninguna</SelectItem>
                         {csvHeaders.map((h) => (
                           <SelectItem key={h} value={h}>
                             {h}

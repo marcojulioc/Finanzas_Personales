@@ -4,10 +4,15 @@ import type { AccountInput } from "@/lib/validators/account";
 import { Decimal } from "@prisma/client/runtime/library";
 
 export async function getAccountsByUser(userId: string) {
-  return prisma.financeAccount.findMany({
+  const accounts = await prisma.financeAccount.findMany({
     where: { userId, isActive: true },
     orderBy: { name: "asc" },
   });
+
+  return accounts.map((account) => ({
+    ...account,
+    initialBalance: account.initialBalance.toNumber(),
+  }));
 }
 
 export async function getAccountWithBalance(userId: string, accountId: string) {
@@ -38,6 +43,7 @@ export async function getAccountWithBalance(userId: string, accountId: string) {
 
   return {
     ...account,
+    initialBalance,
     currentBalance,
     totalIncome,
     totalExpense,
@@ -73,6 +79,7 @@ export async function getAccountsWithBalances(userId: string) {
 
       return {
         ...account,
+        initialBalance,
         currentBalance,
         totalIncome,
         totalExpense,
@@ -145,7 +152,10 @@ export async function getCreditCardDebt(userId: string) {
       }
 
       return {
-        card,
+        card: {
+          ...card,
+          initialBalance: card.initialBalance.toNumber(),
+        },
         debt: purchases - payments,
         purchases,
         payments,
