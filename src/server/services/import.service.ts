@@ -53,9 +53,13 @@ export async function getImportJobById(userId: string, jobId: string) {
 
   const queueStatus = await getJobStatus(jobId);
 
+  // Ensure queueProgress is always a number
+  const progress = queueStatus?.progress;
+  const queueProgress = typeof progress === "number" ? progress : 0;
+
   return {
     ...dbJob,
-    queueProgress: queueStatus?.progress || 0,
+    queueProgress,
     queueState: queueStatus?.state || dbJob.status.toLowerCase(),
   };
 }

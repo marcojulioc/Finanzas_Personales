@@ -6,15 +6,15 @@ export const transactionSchema = z.object({
   type: z.enum(["INCOME", "EXPENSE", "ADJUSTMENT"], {
     required_error: "Tipo es requerido",
   }),
-  amount: z.coerce
+  amount: z
     .number({ invalid_type_error: "Monto debe ser un número" })
     .positive("Monto debe ser mayor a 0"),
-  date: z.coerce.date({
+  date: z.date({
     required_error: "Fecha es requerida",
     invalid_type_error: "Fecha inválida",
   }),
   description: z.string().max(255, "Descripción muy larga").optional().nullable(),
-  paymentMethod: z.enum(["CASH", "TRANSFER", "CARD", "CHECK", "OTHER"]).default("CASH"),
+  paymentMethod: z.enum(["CASH", "TRANSFER", "CARD", "CHECK", "OTHER"]),
   notes: z.string().max(1000, "Notas muy largas").optional().nullable(),
 });
 

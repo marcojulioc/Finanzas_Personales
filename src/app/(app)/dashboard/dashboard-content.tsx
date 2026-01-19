@@ -12,6 +12,7 @@ import {
   CreditCard,
   ArrowUpRight,
   ArrowDownRight,
+  PiggyBank,
 } from "lucide-react";
 import { formatMoney } from "@/lib/money";
 import { formatDate } from "@/lib/dates";
@@ -109,139 +110,172 @@ export function DashboardContent() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Dashboard</h1>
-        <p className="text-muted-foreground">Resumen de tus finanzas</p>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Balance Total</CardTitle>
-            <Wallet className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatMoney(totalBalance)}</div>
-            <p className="text-xs text-muted-foreground">
-              En {accounts.filter((a) => a.type !== "CREDIT_CARD").length} cuentas
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Ingresos del Mes</CardTitle>
-            <TrendingUp className="h-4 w-4 text-green-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              {formatMoney(monthlyTotals.income)}
-            </div>
-            <p className="text-xs text-muted-foreground">Este mes</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Gastos del Mes</CardTitle>
-            <TrendingDown className="h-4 w-4 text-red-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">
-              {formatMoney(monthlyTotals.expense)}
-            </div>
-            <p className="text-xs text-muted-foreground">Este mes</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Deuda TC</CardTitle>
-            <CreditCard className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatMoney(totalDebt)}</div>
-            <p className="text-xs text-muted-foreground">
-              En {creditCardDebt.length} tarjetas
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Savings Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Ahorro del Mes</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between">
-            <div>
-              <div
-                className={`text-3xl font-bold ${
-                  monthlyTotals.savings >= 0 ? "text-green-600" : "text-red-600"
-                }`}
-              >
-                {formatMoney(monthlyTotals.savings)}
+    <div className="space-y-8">
+      {/* Stats Cards - New Design */}
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+        {/* Balance Total */}
+        <Card className="border-0 shadow-sm hover:shadow-md transition-shadow duration-300">
+          <CardContent className="p-5">
+            <div className="flex items-start gap-4">
+              <div className="stat-icon-purple w-12 h-12 rounded-2xl flex items-center justify-center shrink-0">
+                <Wallet className="w-6 h-6 text-purple-600" />
               </div>
-              <p className="text-sm text-muted-foreground">
-                Tasa de ahorro: {monthlyTotals.savingsRate.toFixed(1)}%
-              </p>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  Balance Total
+                </p>
+                <p className="text-xl font-bold mt-1 truncate">
+                  {formatMoney(totalBalance)}
+                </p>
+              </div>
             </div>
-            <div
-              className={`flex items-center gap-1 text-sm ${
-                monthlyTotals.savings >= 0 ? "text-green-600" : "text-red-600"
-              }`}
-            >
-              {monthlyTotals.savings >= 0 ? (
-                <ArrowUpRight className="h-4 w-4" />
-              ) : (
-                <ArrowDownRight className="h-4 w-4" />
-              )}
-              {Math.abs(monthlyTotals.savingsRate).toFixed(1)}%
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
 
-      <div className="grid gap-6 md:grid-cols-2">
+        {/* Ingresos */}
+        <Card className="border-0 shadow-sm hover:shadow-md transition-shadow duration-300">
+          <CardContent className="p-5">
+            <div className="flex items-start gap-4">
+              <div className="stat-icon-green w-12 h-12 rounded-2xl flex items-center justify-center shrink-0">
+                <TrendingUp className="w-6 h-6 text-emerald-600" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  Ingresos
+                </p>
+                <p className="text-xl font-bold mt-1 text-emerald-600 truncate">
+                  {formatMoney(monthlyTotals.income)}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Gastos */}
+        <Card className="border-0 shadow-sm hover:shadow-md transition-shadow duration-300">
+          <CardContent className="p-5">
+            <div className="flex items-start gap-4">
+              <div className="stat-icon-orange w-12 h-12 rounded-2xl flex items-center justify-center shrink-0">
+                <TrendingDown className="w-6 h-6 text-orange-600" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  Gastos
+                </p>
+                <p className="text-xl font-bold mt-1 text-orange-600 truncate">
+                  {formatMoney(monthlyTotals.expense)}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Ahorro */}
+        <Card className="border-0 shadow-sm hover:shadow-md transition-shadow duration-300">
+          <CardContent className="p-5">
+            <div className="flex items-start gap-4">
+              <div className="stat-icon-blue w-12 h-12 rounded-2xl flex items-center justify-center shrink-0">
+                <PiggyBank className="w-6 h-6 text-blue-600" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  Ahorro
+                </p>
+                <p
+                  className={`text-xl font-bold mt-1 truncate ${
+                    monthlyTotals.savings >= 0 ? "text-emerald-600" : "text-red-500"
+                  }`}
+                >
+                  {formatMoney(monthlyTotals.savings)}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Credit Card Debt - Only show if there's debt */}
+      {totalDebt > 0 && (
+        <Card className="border-0 shadow-sm bg-gradient-to-br from-slate-900 to-slate-800 text-white overflow-hidden">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-300 mb-1">
+                  Deuda en Tarjetas
+                </p>
+                <p className="text-3xl font-bold">{formatMoney(totalDebt)}</p>
+                <p className="text-sm text-slate-400 mt-1">
+                  En {creditCardDebt.length} tarjeta{creditCardDebt.length > 1 ? "s" : ""}
+                </p>
+              </div>
+              <div className="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center">
+                <CreditCard className="w-8 h-8 text-white/80" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="grid gap-6 lg:grid-cols-2">
         {/* Recent Transactions */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Movimientos Recientes</CardTitle>
+        <Card className="border-0 shadow-sm">
+          <CardHeader className="pb-4">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg font-semibold">
+                Movimientos Recientes
+              </CardTitle>
+              <a
+                href="/transactions"
+                className="text-sm font-medium text-primary hover:underline"
+              >
+                Ver Todo
+              </a>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               {recentTransactions.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">
-                  No hay movimientos recientes
-                </p>
+                <div className="text-center py-8">
+                  <div className="w-12 h-12 rounded-2xl stat-icon-purple mx-auto mb-3 flex items-center justify-center">
+                    <ArrowUpRight className="w-6 h-6 text-purple-600" />
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    No hay movimientos recientes
+                  </p>
+                </div>
               ) : (
                 recentTransactions.map((transaction) => (
                   <div
                     key={transaction.id}
-                    className="flex items-center justify-between"
+                    className="flex items-center justify-between p-3 rounded-xl hover:bg-secondary/50 transition-colors duration-200"
                   >
                     <div className="flex items-center gap-3">
                       <div
-                        className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                        className={`w-10 h-10 rounded-xl flex items-center justify-center ${
                           transaction.type === "INCOME"
-                            ? "bg-green-100 text-green-600"
+                            ? "stat-icon-green"
                             : transaction.type === "EXPENSE"
-                            ? "bg-red-100 text-red-600"
-                            : "bg-blue-100 text-blue-600"
+                            ? "stat-icon-orange"
+                            : "stat-icon-blue"
                         }`}
                       >
                         {transaction.type === "INCOME" ? (
-                          <ArrowUpRight className="h-5 w-5" />
+                          <ArrowUpRight className="h-5 w-5 text-emerald-600" />
                         ) : (
-                          <ArrowDownRight className="h-5 w-5" />
+                          <ArrowDownRight
+                            className={`h-5 w-5 ${
+                              transaction.type === "EXPENSE"
+                                ? "text-orange-600"
+                                : "text-blue-600"
+                            }`}
+                          />
                         )}
                       </div>
                       <div>
                         <p className="font-medium text-sm">
-                          {transaction.description || transaction.category?.name || "Sin categoría"}
+                          {transaction.description ||
+                            transaction.category?.name ||
+                            "Sin categoría"}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {formatDate(transaction.date)} · {transaction.account.name}
@@ -249,10 +283,10 @@ export function DashboardContent() {
                       </div>
                     </div>
                     <span
-                      className={`font-semibold ${
+                      className={`font-semibold text-sm ${
                         transaction.type === "INCOME"
-                          ? "text-green-600"
-                          : "text-red-600"
+                          ? "text-emerald-600"
+                          : "text-foreground"
                       }`}
                     >
                       {transaction.type === "INCOME" ? "+" : "-"}
@@ -266,29 +300,56 @@ export function DashboardContent() {
         </Card>
 
         {/* Top Expenses by Category */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Gastos por Categoría</CardTitle>
+        <Card className="border-0 shadow-sm">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg font-semibold">
+              Gastos por Categoría
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-5">
               {expensesByCategory.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">
-                  No hay gastos este mes
-                </p>
-              ) : (
-                expensesByCategory.map((expense, index) => (
-                  <div key={index} className="space-y-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <span>{expense.category?.name || "Sin categoría"}</span>
-                      <span className="font-medium">{formatMoney(expense.total)}</span>
-                    </div>
-                    <Progress value={expense.percentage} className="h-2" />
-                    <p className="text-xs text-muted-foreground text-right">
-                      {expense.percentage.toFixed(1)}% del total
-                    </p>
+                <div className="text-center py-8">
+                  <div className="w-12 h-12 rounded-2xl stat-icon-orange mx-auto mb-3 flex items-center justify-center">
+                    <TrendingDown className="w-6 h-6 text-orange-600" />
                   </div>
-                ))
+                  <p className="text-sm text-muted-foreground">
+                    No hay gastos este mes
+                  </p>
+                </div>
+              ) : (
+                expensesByCategory.map((expense, index) => {
+                  const colors = [
+                    "bg-pink-500",
+                    "bg-emerald-500",
+                    "bg-orange-500",
+                    "bg-purple-500",
+                    "bg-blue-500",
+                  ];
+                  return (
+                    <div key={index} className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div
+                            className={`w-2.5 h-2.5 rounded-full ${colors[index % colors.length]}`}
+                          />
+                          <span className="text-sm font-medium">
+                            {expense.category?.name || "Sin categoría"}
+                          </span>
+                        </div>
+                        <span className="text-sm font-semibold">
+                          {formatMoney(expense.total)}
+                        </span>
+                      </div>
+                      <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all duration-500 ${colors[index % colors.length]}`}
+                          style={{ width: `${expense.percentage}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })
               )}
             </div>
           </CardContent>
@@ -297,9 +358,12 @@ export function DashboardContent() {
 
       {/* Budget Alerts */}
       {budgetAlerts.length > 0 && (
-        <Card className="border-orange-200 bg-orange-50">
-          <CardHeader>
-            <CardTitle className="text-lg text-orange-800">
+        <Card className="border-0 shadow-sm border-l-4 border-l-orange-500 bg-orange-50/50">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg font-semibold text-orange-800 flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center">
+                <TrendingUp className="w-4 h-4 text-orange-600" />
+              </div>
               Alertas de Presupuesto
             </CardTitle>
           </CardHeader>
@@ -308,16 +372,20 @@ export function DashboardContent() {
               {budgetAlerts.map((alert) => (
                 <div
                   key={alert.id}
-                  className="flex items-center justify-between p-3 bg-white rounded-lg"
+                  className="flex items-center justify-between p-4 bg-white rounded-xl shadow-sm"
                 >
                   <div>
-                    <p className="font-medium">{alert.category.name}</p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="font-semibold text-sm">{alert.category.name}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
                       {formatMoney(alert.spent)} de {formatMoney(alert.amount)}
                     </p>
                   </div>
                   <Badge
-                    variant={alert.progress >= 100 ? "destructive" : "secondary"}
+                    className={`${
+                      alert.progress >= 100
+                        ? "bg-red-100 text-red-700 hover:bg-red-100"
+                        : "bg-orange-100 text-orange-700 hover:bg-orange-100"
+                    } font-semibold`}
                   >
                     {alert.progress.toFixed(0)}%
                   </Badge>
@@ -333,34 +401,61 @@ export function DashboardContent() {
 
 function DashboardSkeleton() {
   return (
-    <div className="space-y-6">
-      <div>
-        <Skeleton className="h-8 w-32" />
-        <Skeleton className="h-4 w-48 mt-2" />
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="space-y-8">
+      {/* Stats Cards Skeleton */}
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         {[...Array(4)].map((_, i) => (
-          <Card key={i}>
-            <CardHeader className="pb-2">
-              <Skeleton className="h-4 w-24" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-8 w-32" />
-              <Skeleton className="h-3 w-20 mt-2" />
+          <Card key={i} className="border-0 shadow-sm">
+            <CardContent className="p-5">
+              <div className="flex items-start gap-4">
+                <Skeleton className="w-12 h-12 rounded-2xl" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-3 w-20" />
+                  <Skeleton className="h-6 w-28" />
+                </div>
+              </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      <Card>
-        <CardHeader>
-          <Skeleton className="h-6 w-32" />
-        </CardHeader>
-        <CardContent>
-          <Skeleton className="h-12 w-48" />
-        </CardContent>
-      </Card>
+      {/* Two Column Skeleton */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card className="border-0 shadow-sm">
+          <CardHeader className="pb-4">
+            <Skeleton className="h-5 w-40" />
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="flex items-center gap-3 p-3">
+                <Skeleton className="w-10 h-10 rounded-xl" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-3 w-24" />
+                </div>
+                <Skeleton className="h-4 w-20" />
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 shadow-sm">
+          <CardHeader className="pb-4">
+            <Skeleton className="h-5 w-40" />
+          </CardHeader>
+          <CardContent className="space-y-5">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Skeleton className="h-4 w-28" />
+                  <Skeleton className="h-4 w-20" />
+                </div>
+                <Skeleton className="h-2 w-full rounded-full" />
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
