@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Mail, Loader2, CheckCircle, ArrowLeft } from "lucide-react";
 
-export default function LoginPage() {
+function LoginForm() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
   const verify = searchParams.get("verify");
@@ -162,5 +162,31 @@ export default function LoginPage() {
         )}
       </CardContent>
     </Card>
+  );
+}
+
+function LoginSkeleton() {
+  return (
+    <Card className="border-0 shadow-xl">
+      <CardHeader className="pb-2">
+        <div className="h-8 w-32 bg-muted animate-pulse rounded" />
+        <div className="h-5 w-64 bg-muted animate-pulse rounded mt-2" />
+      </CardHeader>
+      <CardContent className="space-y-5 pt-4">
+        <div className="space-y-2">
+          <div className="h-4 w-24 bg-muted animate-pulse rounded" />
+          <div className="h-12 w-full bg-muted animate-pulse rounded-xl" />
+        </div>
+        <div className="h-12 w-full bg-muted animate-pulse rounded-xl" />
+      </CardContent>
+    </Card>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoginSkeleton />}>
+      <LoginForm />
+    </Suspense>
   );
 }
