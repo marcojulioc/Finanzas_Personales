@@ -173,7 +173,7 @@ const worker = new Worker<ImportJobData>(
     return { successRows, errorRows, totalRows };
   },
   {
-    connection,
+    connection: connection as any,
     concurrency: 2,
   }
 );
