@@ -35,8 +35,15 @@ import type {
 } from "@/types";
 
 interface CreditCardDebt {
-  card: SerializedAccount;
+  card: SerializedAccount & { creditLimit: number };
   debt: number;
+  creditAvailable: number;
+  purchases: number;
+  payments: number;
+  cutoffDay: number | null;
+  paymentDueDay: number | null;
+  nextCutoffDate: string | null;
+  nextPaymentDate: string | null;
 }
 
 interface ExpenseByCategory {
@@ -193,26 +200,147 @@ export function DashboardContent() {
         </Card>
       </div>
 
-      {/* Credit Card Debt - Only show if there's debt */}
-      {totalDebt > 0 && (
-        <Card className="border-0 shadow-sm bg-gradient-to-br from-slate-900 to-slate-800 text-white overflow-hidden">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-slate-300 mb-1">
-                  Deuda en Tarjetas
-                </p>
-                <p className="text-3xl font-bold">{formatMoney(totalDebt)}</p>
-                <p className="text-sm text-slate-400 mt-1">
-                  En {creditCardDebt.length} tarjeta{creditCardDebt.length > 1 ? "s" : ""}
-                </p>
+      {/* Credit Card Section - Show if there are credit cards */}
+      {creditCardDebt.length > 0 && (
+        <div className="space-y-4">
+          {/* Total Debt Summary */}
+          <Card className="border-0 shadow-sm bg-gradient-to-br from-slate-900 to-slate-800 text-white overflow-hidden">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-slate-300 mb-1">
+                    Deuda Total en Tarjetas
+                  </p>
+                  <p className="text-3xl font-bold">{formatMoney(totalDebt)}</p>
+                  <p className="text-sm text-slate-400 mt-1">
+                    {creditCardDebt.length} tarjeta{creditCardDebt.length > 1 ? "s" : ""}
+                  </p>
+                </div>
+                <div className="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center">
+                  <CreditCard className="w-8 h-8 text-white/80" />
+                </div>
               </div>
-              <div className="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center">
-                <CreditCard className="w-8 h-8 text-white/80" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+
+          {/* Individual Credit Cards */}
+          <div className="grid gap-4 md:grid-cols-2">
+            {creditCardDebt.map((card) => {
+              const usagePercent = card.card.creditLimit > 0
+                ? Math.min((card.debt / card.card.creditLimit) * 100, 100)
+                : 0;
+              const usageColor = usagePercent >= 80
+                ? "bg-red-500"
+                : usagePercent >= 50
+                  ? "bg-orange-500"
+                  : "bg-emerald-500";
+
+              const formatCardDate = (dateStr: string | null) => {
+                if (!dateStr) return null;
+                const date = new Date(dateStr);
+                return date.toLocaleDateString("es-DO", {
+                  day: "numeric",
+                  month: "short",
+                });
+              };
+
+              const getDaysUntil = (dateStr: string | null) => {
+                if (!dateStr) return null;
+                const date = new Date(dateStr);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const diff = Math.ceil((date.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                return diff;
+              };
+
+              const cutoffDays = getDaysUntil(card.nextCutoffDate);
+              const paymentDays = getDaysUntil(card.nextPaymentDate);
+
+              return (
+                <Card key={card.card.id} className="border-0 shadow-sm">
+                  <CardContent className="p-5">
+                    <div className="space-y-4">
+                      {/* Card Header */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center">
+                            <CreditCard className="w-5 h-5 text-slate-600" />
+                          </div>
+                          <div>
+                            <p className="font-semibold text-sm">{card.card.name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              Límite: {formatMoney(card.card.creditLimit)}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Usage Progress */}
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-muted-foreground">Utilizado</span>
+                          <span className="font-semibold">{usagePercent.toFixed(0)}%</span>
+                        </div>
+                        <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all duration-500 ${usageColor}`}
+                            style={{ width: `${usagePercent}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Amounts */}
+                      <div className="grid grid-cols-2 gap-4 pt-2">
+                        <div>
+                          <p className="text-xs text-muted-foreground">Deuda</p>
+                          <p className="font-semibold text-red-600">{formatMoney(card.debt)}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">Disponible</p>
+                          <p className="font-semibold text-emerald-600">
+                            {formatMoney(card.creditAvailable)}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Dates */}
+                      {(card.cutoffDay || card.paymentDueDay) && (
+                        <div className="grid grid-cols-2 gap-4 pt-2 border-t">
+                          {card.cutoffDay && (
+                            <div>
+                              <p className="text-xs text-muted-foreground">Fecha de corte</p>
+                              <p className="font-medium text-sm">
+                                {formatCardDate(card.nextCutoffDate)}
+                                {cutoffDays !== null && (
+                                  <span className="text-xs text-muted-foreground ml-1">
+                                    ({cutoffDays === 0 ? "Hoy" : cutoffDays === 1 ? "Mañana" : `${cutoffDays} días`})
+                                  </span>
+                                )}
+                              </p>
+                            </div>
+                          )}
+                          {card.paymentDueDay && (
+                            <div>
+                              <p className="text-xs text-muted-foreground">Fecha de pago</p>
+                              <p className="font-medium text-sm">
+                                {formatCardDate(card.nextPaymentDate)}
+                                {paymentDays !== null && (
+                                  <span className={`text-xs ml-1 ${paymentDays <= 3 ? "text-orange-600 font-semibold" : "text-muted-foreground"}`}>
+                                    ({paymentDays === 0 ? "Hoy" : paymentDays === 1 ? "Mañana" : `${paymentDays} días`})
+                                  </span>
+                                )}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
       )}
 
       <div className="grid gap-6 lg:grid-cols-2">

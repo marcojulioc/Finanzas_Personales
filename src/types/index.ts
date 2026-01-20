@@ -23,8 +23,10 @@ export type CategoryType = "INCOME" | "EXPENSE";
 export type ImportStatus = "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED";
 
 // Serialized types (Decimal -> number) for client components
-export interface SerializedAccount extends Omit<FinanceAccount, "initialBalance"> {
+export interface SerializedAccount
+  extends Omit<FinanceAccount, "initialBalance" | "creditLimit"> {
   initialBalance: number;
+  creditLimit: number | null;
 }
 
 export interface SerializedTransaction extends Omit<Transaction, "amount"> {
@@ -48,6 +50,7 @@ export interface AccountWithBalance extends SerializedAccount {
   currentBalance: number;
   totalIncome: number;
   totalExpense: number;
+  creditAvailable: number | null;
 }
 
 export interface BudgetWithProgress extends SerializedBudget {

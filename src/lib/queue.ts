@@ -2,7 +2,7 @@ import { Queue } from "bullmq";
 import redis from "./redis";
 
 export const importQueue = new Queue("csv-import", {
-  connection: redis,
+  connection: redis as any,
   defaultJobOptions: {
     attempts: 3,
     backoff: {

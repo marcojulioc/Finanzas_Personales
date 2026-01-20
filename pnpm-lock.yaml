@@ -50,6 +50,9 @@ importers:
       '@radix-ui/react-tabs':
         specifier: ^1.1.13
         version: 1.1.13(@types/react-dom@19.2.3(@types/react@19.2.8))(@types/react@19.2.8)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      bcryptjs:
+        specifier: ^3.0.3
+        version: 3.0.3
       bullmq:
         specifier: ^5.66.5
         version: 5.66.5
@@ -73,10 +76,10 @@ importers:
         version: 0.562.0(react@19.2.3)
       next:
         specifier: 16.1.3
-        version: 16.1.3(@babel/core@7.28.6)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+        version: 16.1.3(@babel/core@7.28.6)(@playwright/test@1.57.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       next-auth:
         specifier: 5.0.0-beta.30
-        version: 5.0.0-beta.30(next@16.1.3(@babel/core@7.28.6)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react@19.2.3)
+        version: 5.0.0-beta.30(next@16.1.3(@babel/core@7.28.6)(@playwright/test@1.57.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react@19.2.3)
       next-themes:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -117,6 +120,9 @@ importers:
         specifier: ^4.3.5
         version: 4.3.5
     devDependencies:
+      '@playwright/test':
+        specifier: ^1.57.0
+        version: 1.57.0
       '@tailwindcss/postcss':
         specifier: ^4
         version: 4.1.18
@@ -126,6 +132,9 @@ importers:
       '@testing-library/react':
         specifier: ^16.3.2
         version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@19.2.3(@types/react@19.2.8))(@types/react@19.2.8)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      '@types/bcryptjs':
+        specifier: ^3.0.0
+        version: 3.0.0
       '@types/node':
         specifier: ^20
         version: 20.19.30
@@ -165,6 +174,9 @@ importers:
       vitest:
         specifier: ^4.0.17
         version: 4.0.17(@types/node@20.19.30)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0)
+      vitest-mock-extended:
+        specifier: ^3.1.0
+        version: 3.1.0(typescript@5.9.3)(vitest@4.0.17(@types/node@20.19.30)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0))
 
 packages:
 
@@ -785,6 +797,11 @@ packages:
 
   '@pinojs/redact@0.4.0':
     resolution: {integrity: sha512-k2ENnmBugE/rzQfEcdWHcCY+/FM3VLzH9cYEsbdsoqrvzAKRhUZeRNhAZvB8OitQJ1TBed3yqWtdjzS6wJKBwg==}
+
+  '@playwright/test@1.57.0':
+    resolution: {integrity: sha512-6TyEnHgd6SArQO8UO2OMTxshln3QMWBtPGrOCgs3wVEmQmwyuNtB10IZMfmYDE0riwNR1cu4q+pPcxMVtaG3TA==}
+    engines: {node: '>=18'}
+    hasBin: true
 
   '@prisma/client@5.22.0':
     resolution: {integrity: sha512-M0SVXfyHnQREBKxCgyo7sffrKttwE6R8PMq330MIUF0pTwjUhLbW84pFDlf06B27XyCR++VtjugEnIHdr07SVA==}
@@ -1515,6 +1532,10 @@ packages:
   '@types/aria-query@5.0.4':
     resolution: {integrity: sha512-rfT93uj5s0PRL7EzccGMs3brplhcrghnDoV26NqKhCAS1hVo+WdNsPvE/yb6ilfr5hi2MEk6d5EWJTKdxg8jVw==}
 
+  '@types/bcryptjs@3.0.0':
+    resolution: {integrity: sha512-WRZOuCuaz8UcZZE4R5HXTco2goQSI2XxjGY3hbM/xDvwmqFWd4ivooImsMx65OKM6CtNKbnZ5YL+YwAwK7c1dg==}
+    deprecated: This is a stub types definition. bcryptjs provides its own type definitions, so you do not need this installed.
+
   '@types/chai@5.2.3':
     resolution: {integrity: sha512-Mw558oeA9fFbv65/y4mHtXDs9bPnFMZAL/jxdPFUpOHHIXX91mcgEHbS5Lahr+pwZFR8A7GQleRWeI6cGFC2UA==}
 
@@ -1830,6 +1851,10 @@ packages:
 
   baseline-browser-mapping@2.9.15:
     resolution: {integrity: sha512-kX8h7K2srmDyYnXRIppo4AH/wYgzWVCs+eKr3RusRSQ5PvRYoEFmR/I0PbdTjKFAoKqp5+kbxnNTFO9jOfSVJg==}
+    hasBin: true
+
+  bcryptjs@3.0.3:
+    resolution: {integrity: sha512-GlF5wPWnSa/X5LKM1o0wz0suXIINz1iHRLvTS+sLyi7XPbe5ycmYI3DlZqVGZZtDgl4DmasFg7gOB3JYbphV5g==}
     hasBin: true
 
   brace-expansion@1.1.12:
@@ -2237,6 +2262,11 @@ packages:
   for-each@0.3.5:
     resolution: {integrity: sha512-dKx12eRCVIzqCxFGplyFKJMPvLEWgmNtUrpTiJIR5u97zEhRG8ySrtboPHZXx7daLxQVrl643cTzbab2tkQjxg==}
     engines: {node: '>= 0.4'}
+
+  fsevents@2.3.2:
+    resolution: {integrity: sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==}
+    engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
+    os: [darwin]
 
   fsevents@2.3.3:
     resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
@@ -2882,6 +2912,16 @@ packages:
     resolution: {integrity: sha512-Tjyv76gdUe2460dEhtcnA4fU/+HhGq2Kr7OWlo2R/Xxbmn/ZNKWavNWTD2k97IE+s755iVU7WcaOEIl+H3cq8w==}
     hasBin: true
 
+  playwright-core@1.57.0:
+    resolution: {integrity: sha512-agTcKlMw/mjBWOnD6kFZttAAGHgi/Nw0CZ2o6JqWSbMlI219lAFLZZCyqByTsvVAJq5XA5H8cA6PrvBRpBWEuQ==}
+    engines: {node: '>=18'}
+    hasBin: true
+
+  playwright@1.57.0:
+    resolution: {integrity: sha512-ilYQj1s8sr2ppEJ2YVadYBN0Mb3mdo9J0wQ+UuDhzYqURwSoW4n1Xs5vs7ORwgDGmyEh33tRMeS8KhdkMoLXQw==}
+    engines: {node: '>=18'}
+    hasBin: true
+
   possible-typed-array-names@1.1.0:
     resolution: {integrity: sha512-/+5VFTchJDoVj3bhoqi6UeymcD00DAwb1nJwamzPvHEszJ4FpF6SNNbUbOS8yI56qHzdV8eK0qEfOSiodkTdxg==}
     engines: {node: '>= 0.4'}
@@ -3275,6 +3315,14 @@ packages:
     peerDependencies:
       typescript: '>=4.8.4'
 
+  ts-essentials@10.1.1:
+    resolution: {integrity: sha512-4aTB7KLHKmUvkjNj8V+EdnmuVTiECzn3K+zIbRthumvHu+j44x3w63xpfs0JL3NGIzGXqoQ7AV591xHO+XrOTw==}
+    peerDependencies:
+      typescript: '>=4.5.0'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+
   tsconfig-paths@3.15.0:
     resolution: {integrity: sha512-2Ac2RgzDe/cn48GvOe3M+o82pEFewD3UPbyoUHHdKasHwJKjds4fLXWf/Ux5kATBKN20oaFGu+jbElp1pos0mg==}
 
@@ -3412,6 +3460,12 @@ packages:
         optional: true
       yaml:
         optional: true
+
+  vitest-mock-extended@3.1.0:
+    resolution: {integrity: sha512-vCM0VkuocOUBwwqwV7JB7YStw07pqeKvEIrZnR8l3PtwYi6rAAJAyJACeC1UYNfbQWi85nz7EdiXWBFI5hll2g==}
+    peerDependencies:
+      typescript: 3.x || 4.x || 5.x
+      vitest: '>=3.0.0'
 
   vitest@4.0.17:
     resolution: {integrity: sha512-FQMeF0DJdWY0iOnbv466n/0BudNdKj1l5jYgl5JVTwjSsZSlqyXFt/9+1sEyhR6CLowbZpV7O1sCHrzBhucKKg==}
@@ -3995,6 +4049,10 @@ snapshots:
   '@panva/hkdf@1.2.1': {}
 
   '@pinojs/redact@0.4.0': {}
+
+  '@playwright/test@1.57.0':
+    dependencies:
+      playwright: 1.57.0
 
   '@prisma/client@5.22.0(prisma@5.22.0)':
     optionalDependencies:
@@ -4648,6 +4706,10 @@ snapshots:
 
   '@types/aria-query@5.0.4': {}
 
+  '@types/bcryptjs@3.0.0':
+    dependencies:
+      bcryptjs: 3.0.3
+
   '@types/chai@5.2.3':
     dependencies:
       '@types/deep-eql': 4.0.2
@@ -4985,6 +5047,8 @@ snapshots:
   balanced-match@1.0.2: {}
 
   baseline-browser-mapping@2.9.15: {}
+
+  bcryptjs@3.0.3: {}
 
   brace-expansion@1.1.12:
     dependencies:
@@ -5565,6 +5629,9 @@ snapshots:
     dependencies:
       is-callable: 1.2.7
 
+  fsevents@2.3.2:
+    optional: true
+
   fsevents@2.3.3:
     optional: true
 
@@ -6006,10 +6073,10 @@ snapshots:
 
   natural-compare@1.4.0: {}
 
-  next-auth@5.0.0-beta.30(next@16.1.3(@babel/core@7.28.6)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react@19.2.3):
+  next-auth@5.0.0-beta.30(next@16.1.3(@babel/core@7.28.6)(@playwright/test@1.57.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react@19.2.3):
     dependencies:
       '@auth/core': 0.41.0
-      next: 16.1.3(@babel/core@7.28.6)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      next: 16.1.3(@babel/core@7.28.6)(@playwright/test@1.57.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       react: 19.2.3
 
   next-themes@0.4.6(react-dom@19.2.3(react@19.2.3))(react@19.2.3):
@@ -6017,7 +6084,7 @@ snapshots:
       react: 19.2.3
       react-dom: 19.2.3(react@19.2.3)
 
-  next@16.1.3(@babel/core@7.28.6)(react-dom@19.2.3(react@19.2.3))(react@19.2.3):
+  next@16.1.3(@babel/core@7.28.6)(@playwright/test@1.57.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3):
     dependencies:
       '@next/env': 16.1.3
       '@swc/helpers': 0.5.15
@@ -6036,6 +6103,7 @@ snapshots:
       '@next/swc-linux-x64-musl': 16.1.3
       '@next/swc-win32-arm64-msvc': 16.1.3
       '@next/swc-win32-x64-msvc': 16.1.3
+      '@playwright/test': 1.57.0
       sharp: 0.34.5
     transitivePeerDependencies:
       - '@babel/core'
@@ -6195,6 +6263,14 @@ snapshots:
       safe-stable-stringify: 2.5.0
       sonic-boom: 4.2.0
       thread-stream: 4.0.0
+
+  playwright-core@1.57.0: {}
+
+  playwright@1.57.0:
+    dependencies:
+      playwright-core: 1.57.0
+    optionalDependencies:
+      fsevents: 2.3.2
 
   possible-typed-array-names@1.1.0: {}
 
@@ -6648,6 +6724,10 @@ snapshots:
     dependencies:
       typescript: 5.9.3
 
+  ts-essentials@10.1.1(typescript@5.9.3):
+    optionalDependencies:
+      typescript: 5.9.3
+
   tsconfig-paths@3.15.0:
     dependencies:
       '@types/json5': 0.0.29
@@ -6796,6 +6876,12 @@ snapshots:
       jiti: 2.6.1
       lightningcss: 1.30.2
       tsx: 4.21.0
+
+  vitest-mock-extended@3.1.0(typescript@5.9.3)(vitest@4.0.17(@types/node@20.19.30)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0)):
+    dependencies:
+      ts-essentials: 10.1.1(typescript@5.9.3)
+      typescript: 5.9.3
+      vitest: 4.0.17(@types/node@20.19.30)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0)
 
   vitest@4.0.17(@types/node@20.19.30)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0):
     dependencies:

@@ -16,6 +16,7 @@ function serializeTransaction(t: TransactionWithRelations) {
     account: {
       ...t.account,
       initialBalance: t.account.initialBalance.toNumber(),
+      creditLimit: t.account.creditLimit?.toNumber() ?? null,
     },
   };
 }

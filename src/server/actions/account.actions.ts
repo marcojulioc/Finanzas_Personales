@@ -74,6 +74,12 @@ export const getCreditCardDebtAction = createSafeAction(
   z.void(),
   async () => {
     const user = await requireAuth();
-    return accountService.getCreditCardDebt(user.id!);
+    const debts = await accountService.getCreditCardDebt(user.id!);
+    // Serializar dates para el cliente
+    return debts.map((debt) => ({
+      ...debt,
+      nextCutoffDate: debt.nextCutoffDate?.toISOString() ?? null,
+      nextPaymentDate: debt.nextPaymentDate?.toISOString() ?? null,
+    }));
   }
 );

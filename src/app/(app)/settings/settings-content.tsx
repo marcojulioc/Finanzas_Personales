@@ -23,6 +23,11 @@ import {
   Wallet,
   Building,
   CreditCard,
+  Shield,
+  KeyRound,
+  User,
+  CheckCircle,
+  Loader2,
 } from "lucide-react";
 import { formatMoney } from "@/lib/money";
 import {
@@ -31,7 +36,11 @@ import {
   deleteAccountAction,
 } from "@/server/actions/account.actions";
 import { getCategoriesAction } from "@/server/actions/category.actions";
-import type { Category } from "@prisma/client";
+import {
+  setupCredentialsAction,
+  changePinAction,
+  getCredentialsStatusAction,
+} from "@/server/actions/auth.actions";
 import type { AccountWithBalance, CategoryWithSubcategories } from "@/types";
 
 const accountTypeIcons = {
@@ -56,21 +65,43 @@ export function SettingsContent() {
     name: string;
     type: "CASH" | "BANK" | "CREDIT_CARD";
     initialBalance: number;
+    creditLimit?: number;
+    cutoffDay?: number;
+    paymentDueDay?: number;
   }>({
     name: "",
     type: "CASH",
     initialBalance: 0,
   });
 
+  // Security state
+  const [hasCredentials, setHasCredentials] = useState(false);
+  const [currentUsername, setCurrentUsername] = useState<string | null>(null);
+  const [securityForm, setSecurityForm] = useState({
+    username: "",
+    pin: "",
+    confirmPin: "",
+  });
+  const [changePinForm, setChangePinForm] = useState({
+    currentPin: "",
+    newPin: "",
+    confirmNewPin: "",
+  });
+  const [isSettingUpCredentials, setIsSettingUpCredentials] = useState(false);
+  const [isChangingPin, setIsChangingPin] = useState(false);
+
   useEffect(() => {
     async function loadData() {
       try {
-        const [accountsResult, categoriesResult] = await Promise.all([
+        const [accountsResult, categoriesResult, credentialsStatus] = await Promise.all([
           getAccountsWithBalancesAction(undefined),
           getCategoriesAction(undefined),
+          getCredentialsStatusAction(),
         ]);
         if (accountsResult.success && accountsResult.data) setAccounts(accountsResult.data);
         if (categoriesResult.success && categoriesResult.data) setCategories(categoriesResult.data);
+        setHasCredentials(credentialsStatus.hasCredentials);
+        setCurrentUsername(credentialsStatus.username);
       } catch (error) {
         console.error("Error loading settings:", error);
         toast.error("Error al cargar configuración");
@@ -86,6 +117,14 @@ export function SettingsContent() {
     if (!newAccount.name.trim()) {
       toast.error("Nombre de cuenta requerido");
       return;
+    }
+
+    // Validar campos de tarjeta de crédito
+    if (newAccount.type === "CREDIT_CARD") {
+      if (!newAccount.creditLimit || newAccount.creditLimit <= 0) {
+        toast.error("Límite de crédito requerido para tarjetas");
+        return;
+      }
     }
 
     try {
@@ -122,6 +161,74 @@ export function SettingsContent() {
     }
   };
 
+  const handleSetupCredentials = async () => {
+    if (securityForm.pin !== securityForm.confirmPin) {
+      toast.error("Los PINs no coinciden");
+      return;
+    }
+    if (securityForm.pin.length !== 4 || !/^\d{4}$/.test(securityForm.pin)) {
+      toast.error("El PIN debe ser de 4 dígitos numéricos");
+      return;
+    }
+    if (securityForm.username.length < 3) {
+      toast.error("El usuario debe tener al menos 3 caracteres");
+      return;
+    }
+
+    setIsSettingUpCredentials(true);
+    try {
+      const result = await setupCredentialsAction({
+        username: securityForm.username,
+        pin: securityForm.pin,
+        confirmPin: securityForm.confirmPin,
+      });
+      if (result.success) {
+        toast.success(result.message);
+        setHasCredentials(true);
+        setCurrentUsername(securityForm.username);
+        setSecurityForm({ username: "", pin: "", confirmPin: "" });
+      } else {
+        toast.error(result.message);
+      }
+    } catch (error) {
+      toast.error("Error al configurar credenciales");
+      console.error(error);
+    } finally {
+      setIsSettingUpCredentials(false);
+    }
+  };
+
+  const handleChangePin = async () => {
+    if (changePinForm.newPin !== changePinForm.confirmNewPin) {
+      toast.error("Los PINs no coinciden");
+      return;
+    }
+    if (changePinForm.newPin.length !== 4 || !/^\d{4}$/.test(changePinForm.newPin)) {
+      toast.error("El PIN debe ser de 4 dígitos numéricos");
+      return;
+    }
+
+    setIsChangingPin(true);
+    try {
+      const result = await changePinAction({
+        currentPin: changePinForm.currentPin,
+        newPin: changePinForm.newPin,
+        confirmNewPin: changePinForm.confirmNewPin,
+      });
+      if (result.success) {
+        toast.success(result.message);
+        setChangePinForm({ currentPin: "", newPin: "", confirmNewPin: "" });
+      } else {
+        toast.error(result.message);
+      }
+    } catch (error) {
+      toast.error("Error al cambiar PIN");
+      console.error(error);
+    } finally {
+      setIsChangingPin(false);
+    }
+  };
+
   if (loading) {
     return <SettingsSkeleton />;
   }
@@ -131,15 +238,19 @@ export function SettingsContent() {
       <div>
         <h1 className="text-2xl font-bold">Configuración</h1>
         <p className="text-muted-foreground">
-          Administra tu perfil, cuentas y categorías
+          Administra tu perfil, cuentas, categorías y seguridad
         </p>
       </div>
 
       <Tabs defaultValue="profile" className="space-y-6">
-        <TabsList className="w-full justify-start">
+        <TabsList className="w-full justify-start flex-wrap">
           <TabsTrigger value="profile">Perfil</TabsTrigger>
           <TabsTrigger value="accounts">Cuentas</TabsTrigger>
           <TabsTrigger value="categories">Categorías</TabsTrigger>
+          <TabsTrigger value="security" className="flex items-center gap-2">
+            <Shield className="h-4 w-4" />
+            Seguridad
+          </TabsTrigger>
         </TabsList>
 
         {/* Profile Tab */}
@@ -208,6 +319,10 @@ export function SettingsContent() {
                       setNewAccount((prev) => ({
                         ...prev,
                         type: value as "CASH" | "BANK" | "CREDIT_CARD",
+                        // Reset credit card fields when type changes
+                        creditLimit: value === "CREDIT_CARD" ? prev.creditLimit : undefined,
+                        cutoffDay: value === "CREDIT_CARD" ? prev.cutoffDay : undefined,
+                        paymentDueDay: value === "CREDIT_CARD" ? prev.paymentDueDay : undefined,
                       }))
                     }
                   >
@@ -235,6 +350,80 @@ export function SettingsContent() {
                     placeholder="0.00"
                   />
                 </div>
+
+                {/* Credit Card specific fields */}
+                {newAccount.type === "CREDIT_CARD" && (
+                  <>
+                    <div className="border-t pt-4 mt-4">
+                      <h4 className="font-medium text-sm text-muted-foreground mb-4">
+                        Información de Tarjeta de Crédito
+                      </h4>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Límite de crédito *</Label>
+                      <Input
+                        type="number"
+                        value={newAccount.creditLimit || ""}
+                        onChange={(e) =>
+                          setNewAccount((prev) => ({
+                            ...prev,
+                            creditLimit: parseFloat(e.target.value) || undefined,
+                          }))
+                        }
+                        placeholder="50000.00"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Día de corte</Label>
+                        <Select
+                          value={newAccount.cutoffDay?.toString() || ""}
+                          onValueChange={(value) =>
+                            setNewAccount((prev) => ({
+                              ...prev,
+                              cutoffDay: value ? parseInt(value) : undefined,
+                            }))
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Seleccionar" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
+                              <SelectItem key={day} value={day.toString()}>
+                                {day}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Día de pago</Label>
+                        <Select
+                          value={newAccount.paymentDueDay?.toString() || ""}
+                          onValueChange={(value) =>
+                            setNewAccount((prev) => ({
+                              ...prev,
+                              paymentDueDay: value ? parseInt(value) : undefined,
+                            }))
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Seleccionar" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
+                              <SelectItem key={day} value={day.toString()}>
+                                {day}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </>
+                )}
+
                 <div className="flex gap-2">
                   <Button
                     variant="outline"
@@ -378,6 +567,173 @@ export function SettingsContent() {
               </div>
             </div>
           </div>
+        </TabsContent>
+
+        {/* Security Tab */}
+        <TabsContent value="security" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <KeyRound className="h-5 w-5" />
+                Acceso Rápido con PIN
+              </CardTitle>
+              <CardDescription>
+                Configura un usuario y PIN de 4 dígitos para acceder rápidamente sin correo
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {hasCredentials ? (
+                <>
+                  <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-950 rounded-xl border border-green-200 dark:border-green-800">
+                    <CheckCircle className="h-5 w-5 text-green-600" />
+                    <div>
+                      <p className="font-medium text-green-700 dark:text-green-300">
+                        Acceso rápido configurado
+                      </p>
+                      <p className="text-sm text-green-600 dark:text-green-400">
+                        Usuario: <span className="font-mono">{currentUsername}</span>
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="border-t pt-6">
+                    <h4 className="font-medium mb-4">Cambiar PIN</h4>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label>PIN actual</Label>
+                        <Input
+                          type="password"
+                          inputMode="numeric"
+                          maxLength={4}
+                          value={changePinForm.currentPin}
+                          onChange={(e) =>
+                            setChangePinForm((prev) => ({
+                              ...prev,
+                              currentPin: e.target.value.replace(/\D/g, ""),
+                            }))
+                          }
+                          placeholder="****"
+                          className="tracking-widest text-center"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Nuevo PIN</Label>
+                        <Input
+                          type="password"
+                          inputMode="numeric"
+                          maxLength={4}
+                          value={changePinForm.newPin}
+                          onChange={(e) =>
+                            setChangePinForm((prev) => ({
+                              ...prev,
+                              newPin: e.target.value.replace(/\D/g, ""),
+                            }))
+                          }
+                          placeholder="****"
+                          className="tracking-widest text-center"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Confirmar nuevo PIN</Label>
+                        <Input
+                          type="password"
+                          inputMode="numeric"
+                          maxLength={4}
+                          value={changePinForm.confirmNewPin}
+                          onChange={(e) =>
+                            setChangePinForm((prev) => ({
+                              ...prev,
+                              confirmNewPin: e.target.value.replace(/\D/g, ""),
+                            }))
+                          }
+                          placeholder="****"
+                          className="tracking-widest text-center"
+                        />
+                      </div>
+                      <Button
+                        onClick={handleChangePin}
+                        disabled={isChangingPin || changePinForm.newPin.length !== 4}
+                      >
+                        {isChangingPin && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                        Cambiar PIN
+                      </Button>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Nombre de usuario</Label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        value={securityForm.username}
+                        onChange={(e) =>
+                          setSecurityForm((prev) => ({
+                            ...prev,
+                            username: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""),
+                          }))
+                        }
+                        placeholder="tu_usuario"
+                        className="pl-10"
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Solo letras minúsculas, números y guion bajo
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>PIN (4 dígitos)</Label>
+                    <Input
+                      type="password"
+                      inputMode="numeric"
+                      maxLength={4}
+                      value={securityForm.pin}
+                      onChange={(e) =>
+                        setSecurityForm((prev) => ({
+                          ...prev,
+                          pin: e.target.value.replace(/\D/g, ""),
+                        }))
+                      }
+                      placeholder="****"
+                      className="tracking-widest text-center text-lg"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Confirmar PIN</Label>
+                    <Input
+                      type="password"
+                      inputMode="numeric"
+                      maxLength={4}
+                      value={securityForm.confirmPin}
+                      onChange={(e) =>
+                        setSecurityForm((prev) => ({
+                          ...prev,
+                          confirmPin: e.target.value.replace(/\D/g, ""),
+                        }))
+                      }
+                      placeholder="****"
+                      className="tracking-widest text-center text-lg"
+                    />
+                  </div>
+                  <Button
+                    onClick={handleSetupCredentials}
+                    disabled={
+                      isSettingUpCredentials ||
+                      securityForm.pin.length !== 4 ||
+                      securityForm.username.length < 3
+                    }
+                    className="w-full"
+                  >
+                    {isSettingUpCredentials && (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    )}
+                    Configurar Acceso Rápido
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>

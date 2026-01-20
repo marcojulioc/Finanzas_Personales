@@ -12,6 +12,7 @@ export async function getAccountsByUser(userId: string) {
   return accounts.map((account) => ({
     ...account,
     initialBalance: account.initialBalance.toNumber(),
+    creditLimit: account.creditLimit?.toNumber() ?? null,
   }));
 }
 
@@ -41,12 +42,21 @@ export async function getAccountWithBalance(userId: string, accountId: string) {
   const initialBalance = account.initialBalance.toNumber();
   const currentBalance = initialBalance + totalIncome - totalExpense;
 
+  // Para tarjetas de crédito
+  const creditLimit = account.creditLimit?.toNumber() ?? null;
+  const creditAvailable =
+    account.type === "CREDIT_CARD" && creditLimit
+      ? creditLimit - Math.abs(currentBalance)
+      : null;
+
   return {
     ...account,
     initialBalance,
     currentBalance,
     totalIncome,
     totalExpense,
+    creditLimit,
+    creditAvailable,
   };
 }
 
@@ -77,12 +87,21 @@ export async function getAccountsWithBalances(userId: string) {
       const initialBalance = account.initialBalance.toNumber();
       const currentBalance = initialBalance + totalIncome - totalExpense;
 
+      // Para tarjetas de crédito, calcular crédito disponible
+      const creditLimit = account.creditLimit?.toNumber() ?? null;
+      const creditAvailable =
+        account.type === "CREDIT_CARD" && creditLimit
+          ? creditLimit - Math.abs(currentBalance)
+          : null;
+
       return {
         ...account,
         initialBalance,
         currentBalance,
         totalIncome,
         totalExpense,
+        creditLimit,
+        creditAvailable,
       };
     })
   );
@@ -99,6 +118,10 @@ export async function createAccount(userId: string, data: AccountInput) {
       initialBalance: new Decimal(data.initialBalance || 0),
       color: data.color,
       icon: data.icon,
+      // Campos de tarjeta de crédito
+      creditLimit: data.creditLimit ? new Decimal(data.creditLimit) : null,
+      cutoffDay: data.cutoffDay ?? null,
+      paymentDueDay: data.paymentDueDay ?? null,
     },
   });
 }
@@ -118,6 +141,14 @@ export async function updateAccount(
       }),
       ...(data.color !== undefined && { color: data.color }),
       ...(data.icon !== undefined && { icon: data.icon }),
+      // Campos de tarjeta de crédito
+      ...(data.creditLimit !== undefined && {
+        creditLimit: data.creditLimit ? new Decimal(data.creditLimit) : null,
+      }),
+      ...(data.cutoffDay !== undefined && { cutoffDay: data.cutoffDay }),
+      ...(data.paymentDueDay !== undefined && {
+        paymentDueDay: data.paymentDueDay,
+      }),
     },
   });
 }
@@ -151,14 +182,53 @@ export async function getCreditCardDebt(userId: string) {
         if (t.type === "INCOME") payments = amount;
       }
 
+      const creditLimit = card.creditLimit?.toNumber() ?? 0;
+      const debt = purchases - payments;
+      const creditAvailable = creditLimit - debt;
+
+      // Calcular próximas fechas de corte y pago
+      const today = new Date();
+      const currentMonth = today.getMonth();
+      const currentYear = today.getFullYear();
+      const currentDay = today.getDate();
+
+      let nextCutoffDate: Date | null = null;
+      let nextPaymentDate: Date | null = null;
+
+      if (card.cutoffDay) {
+        const cutoffThisMonth = new Date(currentYear, currentMonth, card.cutoffDay);
+        nextCutoffDate =
+          currentDay <= card.cutoffDay
+            ? cutoffThisMonth
+            : new Date(currentYear, currentMonth + 1, card.cutoffDay);
+      }
+
+      if (card.paymentDueDay) {
+        const paymentThisMonth = new Date(
+          currentYear,
+          currentMonth,
+          card.paymentDueDay
+        );
+        nextPaymentDate =
+          currentDay <= card.paymentDueDay
+            ? paymentThisMonth
+            : new Date(currentYear, currentMonth + 1, card.paymentDueDay);
+      }
+
       return {
         card: {
           ...card,
           initialBalance: card.initialBalance.toNumber(),
+          creditLimit,
         },
-        debt: purchases - payments,
+        debt,
+        creditAvailable,
         purchases,
         payments,
+        cutoffDay: card.cutoffDay,
+        paymentDueDay: card.paymentDueDay,
+        nextCutoffDate,
+        nextPaymentDate,
       };
     })
   );

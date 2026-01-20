@@ -2,11 +2,50 @@ import NextAuth from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import Google from "next-auth/providers/google";
 import Resend from "next-auth/providers/resend";
+import Credentials from "next-auth/providers/credentials";
+import bcrypt from "bcryptjs";
 import prisma from "@/lib/db";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
   providers: [
+    Credentials({
+      id: "credentials",
+      name: "Usuario y PIN",
+      credentials: {
+        username: { label: "Usuario", type: "text" },
+        pin: { label: "PIN", type: "password" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.username || !credentials?.pin) {
+          return null;
+        }
+
+        const user = await prisma.user.findUnique({
+          where: { username: credentials.username as string },
+        });
+
+        if (!user?.pin) {
+          return null;
+        }
+
+        const isValidPin = await bcrypt.compare(
+          credentials.pin as string,
+          user.pin
+        );
+
+        if (!isValidPin) {
+          return null;
+        }
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          image: user.image,
+        };
+      },
+    }),
     Resend({
       from: process.env.EMAIL_FROM || "onboarding@resend.dev",
     }),
