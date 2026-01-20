@@ -119,14 +119,22 @@ export function TransactionForm({
   const onSubmit = async (data: TransactionInput) => {
     setIsLoading(true);
     try {
+      let result;
       if (transaction) {
-        await updateTransactionAction(transaction.id, data);
-        toast.success("Transacción actualizada");
+        result = await updateTransactionAction({
+          id: transaction.id,
+          data
+        });
       } else {
-        await createTransactionAction(data);
-        toast.success("Transacción creada");
+        result = await createTransactionAction(data);
       }
-      onClose();
+
+      if (result.success) {
+        toast.success(transaction ? "Transacción actualizada" : "Transacción creada");
+        onClose();
+      } else {
+        toast.error(result.error || "Error al guardar la transacción");
+      }
     } catch (error) {
       toast.error("Error al guardar la transacción");
       console.error(error);
@@ -142,9 +150,12 @@ export function TransactionForm({
 
     setIsDeleting(true);
     try {
-      await deleteTransactionAction(transaction.id);
-      toast.success("Transacción eliminada");
-      onClose();
+      const result = await deleteTransactionAction(transaction.id);
+
+      if (result.success) {
+        toast.success("Transacción eliminada");
+        onClose();
+      }
     } catch (error) {
       toast.error("Error al eliminar la transacción");
       console.error(error);
