@@ -65,12 +65,12 @@ export function SettingsContent() {
   useEffect(() => {
     async function loadData() {
       try {
-        const [accountsData, categoriesData] = await Promise.all([
-          getAccountsWithBalancesAction(),
-          getCategoriesAction(),
+        const [accountsResult, categoriesResult] = await Promise.all([
+          getAccountsWithBalancesAction(undefined),
+          getCategoriesAction(undefined),
         ]);
-        setAccounts(accountsData);
-        setCategories(categoriesData);
+        if (accountsResult.success && accountsResult.data) setAccounts(accountsResult.data);
+        if (categoriesResult.success && categoriesResult.data) setCategories(categoriesResult.data);
       } catch (error) {
         console.error("Error loading settings:", error);
         toast.error("Error al cargar configuración");
@@ -89,12 +89,16 @@ export function SettingsContent() {
     }
 
     try {
-      await createAccountAction(newAccount);
-      toast.success("Cuenta creada");
-      const updatedAccounts = await getAccountsWithBalancesAction();
-      setAccounts(updatedAccounts);
-      setShowAccountForm(false);
-      setNewAccount({ name: "", type: "CASH", initialBalance: 0 });
+      const result = await createAccountAction(newAccount);
+      if (result.success) {
+        toast.success("Cuenta creada");
+        const updatedResult = await getAccountsWithBalancesAction(undefined);
+        if (updatedResult.success && updatedResult.data) setAccounts(updatedResult.data);
+        setShowAccountForm(false);
+        setNewAccount({ name: "", type: "CASH", initialBalance: 0 });
+      } else {
+        toast.error(result.error || "Error al crear cuenta");
+      }
     } catch (error) {
       toast.error("Error al crear cuenta");
       console.error(error);
@@ -105,9 +109,13 @@ export function SettingsContent() {
     if (!confirm("¿Estás seguro de eliminar esta cuenta?")) return;
 
     try {
-      await deleteAccountAction(accountId);
-      toast.success("Cuenta eliminada");
-      setAccounts((prev) => prev.filter((a) => a.id !== accountId));
+      const result = await deleteAccountAction(accountId);
+      if (result.success) {
+        toast.success("Cuenta eliminada");
+        setAccounts((prev) => prev.filter((a) => a.id !== accountId));
+      } else {
+        toast.error(result.error || "Error al eliminar cuenta");
+      }
     } catch (error) {
       toast.error("Error al eliminar cuenta");
       console.error(error);

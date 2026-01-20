@@ -64,15 +64,20 @@ export function TransactionsContent() {
         ...(filters.search && { search: filters.search }),
         ...(filters.accountId && { accountId: filters.accountId }),
         ...(filters.categoryId && { categoryId: filters.categoryId }),
-        ...(filters.type && { type: filters.type }),
+        ...(filters.type && { type: filters.type as "INCOME" | "EXPENSE" | "ADJUSTMENT" }),
       });
 
-      setTransactions(result.data);
-      setPagination((prev) => ({
-        ...prev,
-        total: result.total,
-        totalPages: result.totalPages,
-      }));
+      if (result.success && result.data) {
+        const { data: transactionData } = result;
+        setTransactions(transactionData.data);
+        setPagination((prev) => ({
+          ...prev,
+          total: transactionData.total,
+          totalPages: transactionData.totalPages,
+        }));
+      } else if (result.error) {
+        console.error(result.error);
+      }
     } catch (error) {
       console.error("Error loading transactions:", error);
     } finally {
@@ -83,12 +88,12 @@ export function TransactionsContent() {
   useEffect(() => {
     async function loadInitialData() {
       try {
-        const [accountsData, categoriesData] = await Promise.all([
-          getAccountsAction(),
-          getCategoriesAction(),
+        const [accountsResult, categoriesResult] = await Promise.all([
+          getAccountsAction(undefined),
+          getCategoriesAction(undefined),
         ]);
-        setAccounts(accountsData);
-        setCategories(categoriesData);
+        if (accountsResult.success && accountsResult.data) setAccounts(accountsResult.data);
+        if (categoriesResult.success && categoriesResult.data) setCategories(categoriesResult.data);
       } catch (error) {
         console.error("Error loading initial data:", error);
       }
@@ -219,13 +224,12 @@ export function TransactionsContent() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div
-                        className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                          transaction.type === "INCOME"
-                            ? "bg-green-100 text-green-600"
-                            : transaction.type === "EXPENSE"
+                        className={`w-10 h-10 rounded-full flex items-center justify-center ${transaction.type === "INCOME"
+                          ? "bg-green-100 text-green-600"
+                          : transaction.type === "EXPENSE"
                             ? "bg-red-100 text-red-600"
                             : "bg-blue-100 text-blue-600"
-                        }`}
+                          }`}
                       >
                         {transaction.type === "INCOME" ? (
                           <ArrowUpRight className="h-5 w-5" />
@@ -243,11 +247,10 @@ export function TransactionsContent() {
                       </div>
                     </div>
                     <span
-                      className={`font-semibold ${
-                        transaction.type === "INCOME"
-                          ? "text-green-600"
-                          : "text-red-600"
-                      }`}
+                      className={`font-semibold ${transaction.type === "INCOME"
+                        ? "text-green-600"
+                        : "text-red-600"
+                        }`}
                     >
                       {transaction.type === "INCOME" ? "+" : "-"}
                       {formatMoney(transaction.amount)}
@@ -287,11 +290,10 @@ export function TransactionsContent() {
                       </td>
                       <td className="p-4">{transaction.account.name}</td>
                       <td
-                        className={`p-4 text-right font-medium ${
-                          transaction.type === "INCOME"
-                            ? "text-green-600"
-                            : "text-red-600"
-                        }`}
+                        className={`p-4 text-right font-medium ${transaction.type === "INCOME"
+                          ? "text-green-600"
+                          : "text-red-600"
+                          }`}
                       >
                         {transaction.type === "INCOME" ? "+" : "-"}
                         {formatMoney(transaction.amount)}

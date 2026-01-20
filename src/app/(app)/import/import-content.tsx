@@ -79,8 +79,10 @@ export function ImportContent() {
 
   const loadJobs = useCallback(async () => {
     try {
-      const jobsData = await getImportJobsAction();
-      setJobs(jobsData);
+      const result = await getImportJobsAction(undefined);
+      if (result.success && result.data) {
+        setJobs(result.data);
+      }
     } catch (error) {
       console.error("Error loading jobs:", error);
     } finally {
@@ -97,8 +99,9 @@ export function ImportContent() {
 
     const interval = setInterval(async () => {
       try {
-        const job = await getImportJobByIdAction(activeJobId);
-        if (job) {
+        const result = await getImportJobByIdAction(activeJobId);
+        if (result.success && result.data) {
+          const job = result.data;
           setJobs((prev) =>
             prev.map((j) => (j.id === job.id ? job : j))
           );
@@ -181,33 +184,37 @@ export function ImportContent() {
       reader.onload = async (event) => {
         const csvData = event.target?.result as string;
 
-        const job = await createImportJobAction(
-          csvFile.name,
+        const result = await createImportJobAction({
+          filename: csvFile.name,
           csvData,
-          mapping
-        );
-
-        toast.success("Importación iniciada");
-        setActiveJobId(job.id);
-        setCsvFile(null);
-        setCsvHeaders([]);
-        setCsvPreview([]);
-        setMapping({
-          date: "",
-          amount: "",
-          description: "",
-          type: "",
-          category: "",
-          account: "",
+          mapping,
         });
-        loadJobs();
+
+        if (result.success && result.data) {
+          toast.success("Importación iniciada");
+          setActiveJobId(result.data.id);
+          setCsvFile(null);
+          setCsvHeaders([]);
+          setCsvPreview([]);
+          setMapping({
+            date: "",
+            amount: "",
+            description: "",
+            type: "",
+            category: "",
+            account: "",
+          });
+          loadJobs();
+        } else {
+          toast.error(result.error || "Error al iniciar la importación");
+        }
+        setIsUploading(false);
       };
 
       reader.readAsText(csvFile);
     } catch (error) {
       toast.error("Error al iniciar la importación");
       console.error(error);
-    } finally {
       setIsUploading(false);
     }
   };

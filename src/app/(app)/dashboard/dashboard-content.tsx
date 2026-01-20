@@ -67,27 +67,27 @@ export function DashboardContent() {
         const year = now.getFullYear();
 
         const [
-          accountsData,
-          totals,
-          transactions,
-          alerts,
-          debt,
-          expenses,
+          accountsResult,
+          totalsResult,
+          transactionsResult,
+          alertsResult,
+          debtResult,
+          expensesResult,
         ] = await Promise.all([
-          getAccountsWithBalancesAction(),
-          getMonthlyTotalsAction(month, year),
+          getAccountsWithBalancesAction(undefined),
+          getMonthlyTotalsAction({ month, year }),
           getRecentTransactionsAction(5),
-          getBudgetAlertsAction(month, year),
-          getCreditCardDebtAction(),
-          getExpensesByCategoryAction(month, year),
+          getBudgetAlertsAction({ month, year }),
+          getCreditCardDebtAction(undefined),
+          getExpensesByCategoryAction({ month, year }),
         ]);
 
-        setAccounts(accountsData);
-        setMonthlyTotals(totals);
-        setRecentTransactions(transactions);
-        setBudgetAlerts(alerts);
-        setCreditCardDebt(debt);
-        setExpensesByCategory(expenses.slice(0, 5));
+        if (accountsResult.success && accountsResult.data) setAccounts(accountsResult.data);
+        if (totalsResult.success && totalsResult.data) setMonthlyTotals(totalsResult.data);
+        if (transactionsResult.success && transactionsResult.data) setRecentTransactions(transactionsResult.data);
+        if (alertsResult.success && alertsResult.data) setBudgetAlerts(alertsResult.data);
+        if (debtResult.success && debtResult.data) setCreditCardDebt(debtResult.data);
+        if (expensesResult.success && expensesResult.data) setExpensesByCategory(expensesResult.data.slice(0, 5));
       } catch (error) {
         console.error("Error loading dashboard:", error);
       } finally {
@@ -182,9 +182,8 @@ export function DashboardContent() {
                   Ahorro
                 </p>
                 <p
-                  className={`text-xl font-bold mt-1 truncate ${
-                    monthlyTotals.savings >= 0 ? "text-emerald-600" : "text-red-500"
-                  }`}
+                  className={`text-xl font-bold mt-1 truncate ${monthlyTotals.savings >= 0 ? "text-emerald-600" : "text-red-500"
+                    }`}
                 >
                   {formatMoney(monthlyTotals.savings)}
                 </p>
@@ -251,23 +250,21 @@ export function DashboardContent() {
                   >
                     <div className="flex items-center gap-3">
                       <div
-                        className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                          transaction.type === "INCOME"
+                        className={`w-10 h-10 rounded-xl flex items-center justify-center ${transaction.type === "INCOME"
                             ? "stat-icon-green"
                             : transaction.type === "EXPENSE"
-                            ? "stat-icon-orange"
-                            : "stat-icon-blue"
-                        }`}
+                              ? "stat-icon-orange"
+                              : "stat-icon-blue"
+                          }`}
                       >
                         {transaction.type === "INCOME" ? (
                           <ArrowUpRight className="h-5 w-5 text-emerald-600" />
                         ) : (
                           <ArrowDownRight
-                            className={`h-5 w-5 ${
-                              transaction.type === "EXPENSE"
+                            className={`h-5 w-5 ${transaction.type === "EXPENSE"
                                 ? "text-orange-600"
                                 : "text-blue-600"
-                            }`}
+                              }`}
                           />
                         )}
                       </div>
@@ -283,11 +280,10 @@ export function DashboardContent() {
                       </div>
                     </div>
                     <span
-                      className={`font-semibold text-sm ${
-                        transaction.type === "INCOME"
+                      className={`font-semibold text-sm ${transaction.type === "INCOME"
                           ? "text-emerald-600"
                           : "text-foreground"
-                      }`}
+                        }`}
                     >
                       {transaction.type === "INCOME" ? "+" : "-"}
                       {formatMoney(transaction.amount)}
@@ -381,11 +377,10 @@ export function DashboardContent() {
                     </p>
                   </div>
                   <Badge
-                    className={`${
-                      alert.progress >= 100
+                    className={`${alert.progress >= 100
                         ? "bg-red-100 text-red-700 hover:bg-red-100"
                         : "bg-orange-100 text-orange-700 hover:bg-orange-100"
-                    } font-semibold`}
+                      } font-semibold`}
                   >
                     {alert.progress.toFixed(0)}%
                   </Badge>

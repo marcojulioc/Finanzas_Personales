@@ -42,12 +42,14 @@ export function BudgetsContent() {
   const loadBudgets = useCallback(async () => {
     try {
       setLoading(true);
-      const [budgetsData, categoriesData] = await Promise.all([
-        getBudgetsAction(month, year),
+      const [budgetsResult, categoriesResult] = await Promise.all([
+        getBudgetsAction({ month, year }),
         getCategoriesByTypeAction("EXPENSE"),
       ]);
-      setBudgets(budgetsData);
-      setCategories(categoriesData.flatMap((c) => [c, ...c.subcategories]));
+      if (budgetsResult.success && budgetsResult.data) setBudgets(budgetsResult.data);
+      if (categoriesResult.success && categoriesResult.data) {
+        setCategories(categoriesResult.data.flatMap((c) => [c, ...c.subcategories]));
+      }
     } catch (error) {
       console.error("Error loading budgets:", error);
       toast.error("Error al cargar presupuestos");
@@ -77,9 +79,13 @@ export function BudgetsContent() {
     if (!confirm("¿Estás seguro de eliminar este presupuesto?")) return;
 
     try {
-      await deleteBudgetAction(budgetId);
-      toast.success("Presupuesto eliminado");
-      loadBudgets();
+      const result = await deleteBudgetAction(budgetId);
+      if (result.success) {
+        toast.success("Presupuesto eliminado");
+        loadBudgets();
+      } else {
+        toast.error(result.error || "Error al eliminar presupuesto");
+      }
     } catch (error) {
       toast.error("Error al eliminar presupuesto");
       console.error(error);
@@ -88,8 +94,12 @@ export function BudgetsContent() {
 
   const handleCopyToNextMonth = async () => {
     try {
-      await copyBudgetsToNextMonthAction(month, year);
-      toast.success("Presupuestos copiados al próximo mes");
+      const result = await copyBudgetsToNextMonthAction({ month, year });
+      if (result.success) {
+        toast.success("Presupuestos copiados al próximo mes");
+      } else {
+        toast.error(result.error || "Error al copiar presupuestos");
+      }
     } catch (error) {
       toast.error("Error al copiar presupuestos");
       console.error(error);

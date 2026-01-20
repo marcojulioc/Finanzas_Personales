@@ -4,14 +4,13 @@ export const transactionSchema = z.object({
   accountId: z.string().min(1, "Cuenta es requerida"),
   categoryId: z.string().optional().nullable(),
   type: z.enum(["INCOME", "EXPENSE", "ADJUSTMENT"], {
-    required_error: "Tipo es requerido",
+    message: "Tipo es requerido",
   }),
   amount: z
-    .number({ invalid_type_error: "Monto debe ser un número" })
+    .number({ message: "Monto debe ser un número" })
     .positive("Monto debe ser mayor a 0"),
   date: z.date({
-    required_error: "Fecha es requerida",
-    invalid_type_error: "Fecha inválida",
+    message: "Fecha es requerida",
   }),
   description: z.string().max(255, "Descripción muy larga").optional().nullable(),
   paymentMethod: z.enum(["CASH", "TRANSFER", "CARD", "CHECK", "OTHER"]),

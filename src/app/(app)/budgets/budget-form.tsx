@@ -87,14 +87,24 @@ export function BudgetForm({
   const onSubmit = async (data: BudgetInput) => {
     setIsLoading(true);
     try {
+      let result;
       if (budget) {
-        await updateBudgetAction(budget.id, data);
-        toast.success("Presupuesto actualizado");
+        result = await updateBudgetAction({ id: budget.id, data });
+        if (result.success) {
+          toast.success("Presupuesto actualizado");
+          onClose();
+        } else {
+          toast.error(result.error || "Error al actualizar el presupuesto");
+        }
       } else {
-        await createBudgetAction(data);
-        toast.success("Presupuesto creado");
+        result = await createBudgetAction(data);
+        if (result.success) {
+          toast.success("Presupuesto creado");
+          onClose();
+        } else {
+          toast.error(result.error || "Error al crear el presupuesto");
+        }
       }
-      onClose();
     } catch (error) {
       toast.error("Error al guardar el presupuesto");
       console.error(error);
